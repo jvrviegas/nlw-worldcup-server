@@ -17,9 +17,10 @@ export async function gameRoutes(fastify: FastifyInstance) {
 
       const games = await prisma.game.findMany({
         orderBy: {
-          date: 'asc',
+          match: {
+            date: 'asc',
+          },
         },
-
         include: {
           guesses: {
             where: {
@@ -27,6 +28,14 @@ export async function gameRoutes(fastify: FastifyInstance) {
                 userId: req.user.sub,
                 pollId: id,
               },
+            },
+          },
+          match: {
+            select: {
+              id: true,
+              date: true,
+              firstTeamCountryCode: true,
+              secondTeamCountryCode: true,
             },
           },
         },
@@ -38,6 +47,7 @@ export async function gameRoutes(fastify: FastifyInstance) {
             ...game,
             guess: game.guesses.length > 0 ? game.guesses[0] : null,
             guesses: undefined,
+            ...game.match,
           };
         }),
       };
