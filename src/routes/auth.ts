@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
+import { api } from '@/lib/axios';
 import { prisma } from '@/lib/prisma';
 import { authenticate } from '@/plugins/authenticate';
 
@@ -16,7 +17,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     const { access_token } = createUserBody.parse(req.body);
 
-    const userResponse = await fetch(
+    const userResponse = await api(
       'https://www.googleapis.com/oauth2/v2/userinfo',
       {
         method: 'GET',
@@ -26,8 +27,6 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
     );
 
-    const userData = await userResponse.json();
-
     const userInfoSchema = z.object({
       id: z.string(),
       email: z.string().email(),
@@ -35,7 +34,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       picture: z.string().url(),
     });
 
-    const userInfo = userInfoSchema.parse(userData);
+    const userInfo = userInfoSchema.parse(userResponse.data);
 
     let user = await prisma.user.findUnique({
       where: {
