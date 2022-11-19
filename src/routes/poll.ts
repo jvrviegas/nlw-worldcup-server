@@ -121,7 +121,6 @@ export async function pollRoutes(fastify: FastifyInstance) {
         participants: {
           select: {
             id: true,
-
             user: {
               select: {
                 avatarUrl: true,
